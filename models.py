@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy import ForeignKey
+from sqlalchemy import ForeignKey, DateTime
 from decimal import Decimal
 from datetime import datetime
 
@@ -26,5 +26,5 @@ class Alert(Base):
     condition: Mapped[str]
     threshold: Mapped[Decimal]
     is_active: Mapped[bool] = mapped_column(default=True)
-    last_triggered_at: Mapped[datetime | None] = mapped_column(default=None)
+    last_triggered_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True),default=None)
 
