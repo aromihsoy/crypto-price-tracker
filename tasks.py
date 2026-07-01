@@ -9,6 +9,7 @@ from datetime import datetime, timezone, timedelta
 
 import httpx
 import asyncio
+import json
 
 
 
@@ -60,7 +61,15 @@ async def _poll_and_evaluate():
                     )
                 if cooldown_passed:
                     alert.last_triggered_at = now
-                    print(f"ALERT TRIGGERED: alert={alert.id} {alert.symbol} {alert.condition} {alert.threshold} @ {price}")
+                    message = json.dumps({
+                        "alert_id": alert.id,
+                        "symbol": alert.symbol,
+                        "condition": alert.condition,
+                        "threshold": str(alert.threshold),
+                        "price": str(price),
+                    })
+                    await redis.publish(f"alerts:{alert.user_id}", message)
+                    print(f"ALERT TRIGGERED: alert={alert.id} {alert.symbol} {alert.condition} {alert.threshold} @ {price} published to alerts:{alert.user_id}")
             await session.commit()
 
 
