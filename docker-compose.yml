@@ -19,5 +19,46 @@ services:
       - "6379:6379"
 
 
+  web:
+    build: .
+    container_name: tracker_web
+    command: uvicorn main:app --host 0.0.0.0 --port 8000
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql+asyncpg://tracker_user:tracker_pass@db:5432/tracker
+      REDIS_URL: redis://redis:6379/0
+      SECRET_KEY: ${SECRET_KEY}
+    depends_on:
+      - db
+      - redis
+
+
+  worker:
+    build: .
+    container_name: tracker_worker
+    command: celery -A celery_app worker --loglevel=info
+    environment:
+      DATABASE_URL: postgresql+asyncpg://tracker_user:tracker_pass@db:5432/tracker
+      REDIS_URL: redis://redis:6379/0
+      SECRET_KEY: ${SECRET_KEY}
+    depends_on:
+      - db
+      - redis
+
+
+  beat:
+    build: .
+    container_name: tracker_beat
+    command: celery -A celery_app beat --loglevel=info
+    environment:
+      DATABASE_URL: postgresql+asyncpg://tracker_user:tracker_pass@db:5432/tracker
+      REDIS_URL: redis://redis:6379/0
+      SECRET_KEY: ${SECRET_KEY}
+    depends_on:
+      - db
+      - redis
+
+
 volumes:
   pgdata:
